@@ -30,18 +30,13 @@ function App() {
     setNotes(prev => prev.filter(n => n.id !== id));
   };
 
-  // ---------------------------------------------------------
-  // PROCESSADOR INTELIGENTE: Aceita parâmetros de tamanho
-  // ---------------------------------------------------------
   const processImage = (file, maxWidth, quality, callback) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      
       let width = img.width;
       let height = img.height;
 
-      // Só reduz se a imagem for maior que o limite que passamos
       if (width > maxWidth) {
         height = Math.round((height * maxWidth) / width);
         width = maxWidth;
@@ -58,7 +53,6 @@ function App() {
     img.src = URL.createObjectURL(file);
   };
 
-  // 1. Fotos do Mural (Mapas Mentais): Trava em Full HD (1920px) e 80% de qualidade
   const handleAddPhoto = (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -69,16 +63,13 @@ function App() {
         x: window.innerWidth / 2 - 100, 
         y: window.innerHeight / 2 - 100 
       };
-      
       muralService.createPhoto(newPhoto)
         .then(data => setPhotos(prev => [...prev, data]))
-        .catch(err => alert("Erro ao salvar no servidor: " + err.message));
+        .catch(err => alert("Erro ao salvar: " + err.message));
     });
-    
     event.target.value = ''; 
   };
 
-  // 2. Papel de Parede: Libera o 4K (3840px) e 90% de qualidade!
   const handleChangeBg = (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -88,10 +79,9 @@ function App() {
         localStorage.setItem('mural_bg', base64Data);
         setBgImage(base64Data);
       } catch (e) {
-        alert("A imagem 4K é linda, mas o navegador não aguentou salvar na memória (LocalStorage lotado).");
+        alert("A imagem é muito grande para a memória do navegador.");
       }
     });
-    
     event.target.value = '';
   };
 
@@ -115,18 +105,19 @@ function App() {
          backgroundPosition: 'center'
       }}
     >
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/40 backdrop-blur-md p-3 rounded-xl shadow-lg border border-white/50 flex gap-4 z-50">
-        <button onClick={handleAddNote} className="px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold rounded-lg cursor-pointer transition-colors shadow-sm">
-          + Novo Post-it
+      {/* O NOVO MENU MINIMALISTA ESTÁ AQUI */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/20 backdrop-blur-md p-1.5 rounded-full shadow-md border border-white/30 flex gap-2 z-50">
+        <button onClick={handleAddNote} className="px-4 py-1.5 bg-white/60 hover:bg-white/90 text-gray-700 text-sm font-semibold rounded-full cursor-pointer transition-all shadow-sm">
+          + Post-it
         </button>
 
-        <label htmlFor="upload-photo" className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg cursor-pointer transition-colors shadow-sm">
-          + Adicionar Foto
+        <label htmlFor="upload-photo" className="px-4 py-1.5 bg-white/60 hover:bg-white/90 text-gray-700 text-sm font-semibold rounded-full cursor-pointer transition-all shadow-sm">
+          + Foto
         </label>
         <input id="upload-photo" type="file" accept="image/*" onChange={handleAddPhoto} className="hidden" />
 
-        <label htmlFor="upload-bg" className="px-6 py-2 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-lg cursor-pointer transition-colors shadow-sm">
-          Mudar Fundo
+        <label htmlFor="upload-bg" className="px-4 py-1.5 bg-white/60 hover:bg-white/90 text-gray-700 text-sm font-semibold rounded-full cursor-pointer transition-all shadow-sm">
+          Fundo
         </label>
         <input id="upload-bg" type="file" accept="image/*" onChange={handleChangeBg} className="hidden" />
       </div>
