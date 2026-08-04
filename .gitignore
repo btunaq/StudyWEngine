@@ -1,0 +1,39 @@
+# =========================
+# BANCO DE DADOS (IMPORTANTE)
+# =========================
+# Ignora o banco SQLite para não vazar suas anotações e fotos pessoais no GitHub
+*.db
+*.sqlite3
+backend/mural.db
+
+# =========================
+# FRONTEND (React / Vite / Node)
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.env
+frontend/.env.*
+frontend/*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# BACKEND (Python / FastAPI)
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+.env
+
+# =========================
+# SISTEMA OPERACIONAL E IDE
+# =========================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

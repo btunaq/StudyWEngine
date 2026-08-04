@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* Garante que o corpo do site seja transparente 
+   para o Lively mostrar o fundo real do Windows se não houver imagem */
+body {
+  background-color: transparent !important; 
+}
