@@ -5,7 +5,6 @@ import sqlite3
 
 app = FastAPI()
 
-# 1. Configuração do CORS para permitir o frontend (React) se comunicar
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -13,29 +12,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 2. Definição da estrutura de dados esperada do React (Modelos)
 class NoteBase(BaseModel):
     text: str
     x: int
     y: int
 
 class PhotoBase(BaseModel):
-    image_data: str # Aqui a mágica acontece: a imagem chega como um textão Base64
+    image_data: str
     x: int
     y: int
+    w: int = 320 # Largura padrão caso não seja enviada
+    h: int = 256 # Altura padrão caso não seja enviada
 
-# 3. Conexão com o banco de dados SQLite
 def get_db():
     conn = sqlite3.connect('mural.db')
     conn.row_factory = sqlite3.Row 
     return conn
 
-# 4. Inicialização do Banco (Cria as duas tabelas se não existirem)
 @app.on_event("startup")
 def startup():
     conn = get_db()
     
-    # Tabela para os Post-its
     conn.execute('''
         CREATE TABLE IF NOT EXISTS notes (
             id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -45,23 +42,22 @@ def startup():
         )
     ''')
     
-    # Tabela para as Fotos
+    # Adicionamos as colunas w e h na tabela
     conn.execute('''
         CREATE TABLE IF NOT EXISTS photos (
             id INTEGER PRIMARY KEY AUTOINCREMENT, 
             image_data TEXT, 
             x INTEGER, 
-            y INTEGER
+            y INTEGER,
+            w INTEGER,
+            h INTEGER
         )
     ''')
     
     conn.commit()
     conn.close()
 
-# ==========================================
-# ROTAS PARA OS POST-ITS (NOTAS)
-# ==========================================
-
+# --- ROTAS DE POST-ITS ---
 @app.get("/notes")
 def get_notes():
     conn = get_db()
@@ -95,13 +91,10 @@ def delete_note(note_id: int):
     conn.execute("DELETE FROM notes WHERE id=?", (note_id,))
     conn.commit()
     conn.close()
-    return {"message": "Post-it deletado com sucesso"}
+    return {"message": "Deletado"}
 
 
-# ==========================================
-# ROTAS PARA AS FOTOS
-# ==========================================
-
+# --- ROTAS DE FOTOS ---
 @app.get("/photos")
 def get_photos():
     conn = get_db()
@@ -113,8 +106,9 @@ def get_photos():
 def create_photo(photo: PhotoBase):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO photos (image_data, x, y) VALUES (?, ?, ?)", 
-                   (photo.image_data, photo.x, photo.y))
+    # Adicionamos o w e h no banco
+    cursor.execute("INSERT INTO photos (image_data, x, y, w, h) VALUES (?, ?, ?, ?, ?)", 
+                   (photo.image_data, photo.x, photo.y, photo.w, photo.h))
     conn.commit()
     photo_id = cursor.lastrowid
     conn.close()
@@ -122,10 +116,10 @@ def create_photo(photo: PhotoBase):
 
 @app.put("/photos/{photo_id}")
 def update_photo(photo_id: int, photo: PhotoBase):
-    """Note que não atualizamos o image_data, apenas as coordenadas X e Y quando a foto é arrastada"""
     conn = get_db()
-    conn.execute("UPDATE photos SET x=?, y=? WHERE id=?", 
-                 (photo.x, photo.y, photo_id))
+    # Atualizamos as coordenadas e o tamanho!
+    conn.execute("UPDATE photos SET x=?, y=?, w=?, h=? WHERE id=?", 
+                 (photo.x, photo.y, photo.w, photo.h, photo_id))
     conn.commit()
     conn.close()
     return {"id": photo_id, **photo.dict()}
@@ -136,4 +130,4 @@ def delete_photo(photo_id: int):
     conn.execute("DELETE FROM photos WHERE id=?", (photo_id,))
     conn.commit()
     conn.close()
-    return {"message": "Foto deletada com sucesso"}
+    return {"message": "Deletado"}
